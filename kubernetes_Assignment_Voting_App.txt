@@ -237,8 +237,15 @@ result-5d57b59f4b-7glgg   1/1     Running   0          40s
 vote-94849dc97-jcgk8      1/1     Running   0          113m
 worker-dd46d7584-tqqs4    1/1     Running   1          111m
 [root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 result]# pwd
+/root/example-voting-app/result
+[root@ip-172-31-17-119 result]# ls
+docker-compose.test.yml  Dockerfile  package.json  server.js  tests  views
+[root@ip-172-31-17-119 result]#
 
 
-No Difference after deleting "voting Pod" as voting pod is recreated back due to replicas as 1 in vote-deployment.yaml
-No Difference after deleting "worker pod " as worker pod is recreated back due to replicas as 1 in worker-deployment.yaml
-After deleted DB pod it is recreated back but voting result page doesn't work, though voting page is working . But if we delete result pod then it is also recreated and result page also start working.
+
+No Difference(in voting & result page) after deleting "voting Pod" as voting pod is recreated back due to replicas as 1 in vote-deployment.yaml
+No Difference(in voting & result page) after deleting "worker pod " as worker pod is recreated back due to replicas as 1 in worker-deployment.yaml
+After deleted DB pod it is recreated back but voting result page doesn't work, though voting page is working . But if we delete result pod then it is also recreated and result page also start working. As per explaination there is server.js that is responsible for it
+Please find the working logs as above
