@@ -1,0 +1,386 @@
+All Assignments
+
+[root@ip-172-31-17-119 04-controllers]# cat kubia-rc.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kubia2
+spec:
+  replicas: 3
+  selector:
+    app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+        ports:
+        - containerPort: 8080
+[root@ip-172-31-17-119 04-controllers]# cat kubia-replicaset.yaml
+apiVersion: apps/v1beta2
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+[root@ip-172-31-17-119 04-controllers]#
+
+
+Below are the differences between  kubia-replicaset.yaml & kubia-rc.yaml 
+
+1.	apiversion is V1 in kubia-rc.yaml whereas it is apps/v1beta2 in kubia-replicaset.yaml
+2.	kubia-rc.yaml  is Replicationcontroller kind whereas kubia-replicaset.yaml ReplicaSet
+3.	matchlabels is part of kubia-replicaset.yaml and not for kubia-rc.yaml
+4.	ports and containerport is defined in kubia-rc.yaml but not in kubia-replicaset.yaml
+[root@ip-172-31-17-119 05-services]# cat kubia-replicaset.yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia
+  template:
+    metadata:
+      labels:
+        app: kubia
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]# pwd
+/root/kubernetes-training/05-services
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]# kubectl apply -f kubia-replicaset.yaml
+replicaset.apps/kubia created
+[root@ip-172-31-17-119 05-services]# kubectl get po all
+Error from server (NotFound): pods "all" not found
+[root@ip-172-31-17-119 05-services]# kubectl get po
+NAME          READY   STATUS    RESTARTS   AGE
+kubia-mslxv   1/1     Running   0          20s
+kubia-pf8ff   1/1     Running   0          20s
+kubia-rknd5   1/1     Running   0          20s
+[root@ip-172-31-17-119 05-services]# kubectl get po -o wide
+NAME          READY   STATUS    RESTARTS   AGE   IP                NODE                                               NOMINATED NODE   READINESS GATES
+kubia-mslxv   1/1     Running   0          36s   192.168.233.207   ip-172-31-30-247.ap-southeast-1.compute.internal   <none>           <none>
+kubia-pf8ff   1/1     Running   0          36s   192.168.233.202   ip-172-31-30-247.ap-southeast-1.compute.internal   <none>           <none>
+kubia-rknd5   1/1     Running   0          36s   192.168.233.206   ip-172-31-30-247.ap-southeast-1.compute.internal   <none>           <none>
+[root@ip-172-31-17-119 05-services]# kubectl get po all
+Error from server (NotFound): pods "all" not found
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-mslxv   1/1     Running   0          48s
+pod/kubia-pf8ff   1/1     Running   0          48s
+pod/kubia-rknd5   1/1     Running   0          48s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   2m20s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       48s
+[root@ip-172-31-17-119 05-services]# ls
+external-service-endpoints.yaml     kubia-ingress-tls.yaml        kubia-replicaset.yaml                      kubia-svc-named-ports.yaml         kubia-svc.yaml
+external-service-externalname.yaml  kubia-ingress.yaml            kubia-svc-client-ip-session-affinity.yaml  kubia-svc-nodeport-onlylocal.yaml  tls.cert
+external-service.yaml               kubia-pod.yml                 kubia-svc-headless.yaml                    kubia-svc-nodeport.yaml            tls.key
+ingress                             kubia-rc-readinessprobe.yaml  kubia-svc-loadbalancer.yaml                kubia-svc-publish-not-ready.yaml
+[root@ip-172-31-17-119 05-services]# kubectl apply -f kubia-svc.yaml
+service/kubia2 created
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-mslxv   1/1     Running   0          82s
+pod/kubia-pf8ff   1/1     Running   0          82s
+pod/kubia-rknd5   1/1     Running   0          82s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   2m54s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    4s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       82s
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+You've hit kubia-pf8ff
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+You've hit kubia-mslxv
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+You've hit kubia-rknd5
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+You've hit kubia-mslxv
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+You've hit kubia-rknd5
+[root@ip-172-31-17-119 05-services]# vi kubia-replicaset.yaml
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]# cat kubia-replicaset.yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kubia
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kubia_1
+  template:
+    metadata:
+      labels:
+        app: kubia_1
+    spec:
+      containers:
+      - name: kubia
+        image: luksa/kubia
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-mslxv   1/1     Running   0          3m27s
+pod/kubia-pf8ff   1/1     Running   0          3m27s
+pod/kubia-rknd5   1/1     Running   0          3m27s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   4m59s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    2m9s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       3m27s
+[root@ip-172-31-17-119 05-services]# kubectl delete rs kubia
+replicaset.apps "kubia" deleted
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS        RESTARTS   AGE
+pod/kubia-mslxv   1/1     Terminating   0          4m30s
+pod/kubia-pf8ff   1/1     Terminating   0          4m30s
+pod/kubia-rknd5   1/1     Terminating   0          4m30s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m2s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    3m12s
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS        RESTARTS   AGE
+pod/kubia-mslxv   1/1     Terminating   0          4m38s
+pod/kubia-pf8ff   1/1     Terminating   0          4m38s
+pod/kubia-rknd5   1/1     Terminating   0          4m38s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m10s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    3m20s
+[root@ip-172-31-17-119 05-services]# kubectl apply -f kubia-svc.yaml
+service/kubia2 unchanged
+[root@ip-172-31-17-119 05-services]# kubectl apply -f kubia-replicaset.yaml
+replicaset.apps/kubia created
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS              RESTARTS   AGE
+pod/kubia-htr6s   0/1     ContainerCreating   0          5s
+pod/kubia-klhdk   1/1     Running             0          5s
+pod/kubia-qfnmz   0/1     ContainerCreating   0          5s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m47s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    3m57s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         1       5s
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS              RESTARTS   AGE
+pod/kubia-htr6s   1/1     Running             0          8s
+pod/kubia-klhdk   1/1     Running             0          8s
+pod/kubia-qfnmz   0/1     ContainerCreating   0          8s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m50s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    4m
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         2       8s
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-htr6s   1/1     Running   0          13s
+pod/kubia-klhdk   1/1     Running   0          13s
+pod/kubia-qfnmz   1/1     Running   0          13s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m55s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    4m5s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       13s
+[root@ip-172-31-17-119 05-services]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-htr6s   1/1     Running   0          16s
+pod/kubia-klhdk   1/1     Running   0          16s
+pod/kubia-qfnmz   1/1     Running   0          16s
+
+NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   6m58s
+service/kubia2       ClusterIP   10.99.10.99   <none>        80/TCP    4m8s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       16s
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]#
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+curl: (7) Failed to connect to 10.99.10.99 port 80 after 0 ms: Connection refused
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+curl: (7) Failed to connect to 10.99.10.99 port 80 after 0 ms: Connection refused
+[root@ip-172-31-17-119 05-services]# curl 10.99.10.99:80
+curl: (7) Failed to connect to 10.99.10.99 port 80 after 0 ms: Connection refused
+[root@ip-172-31-17-119 05-services]#
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+2nd Assignment of Cronjob
+
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]# kubectl get po
+No resources found in default namespace.
+[root@ip-172-31-17-119 04-controllers]# kubectl get all
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   21s
+[root@ip-172-31-17-119 04-controllers]# cd ..
+[root@ip-172-31-17-119 kubernetes-training]# cd 05
+-bash: cd: 05: No such file or directory
+[root@ip-172-31-17-119 kubernetes-training]# cd 05-services/
+[root@ip-172-31-17-119 05-services]# ls
+external-service-endpoints.yaml     kubia-ingress-tls.yaml        kubia-replicaset.yaml                      kubia-svc-named-ports.yaml         kubia-svc.yaml
+external-service-externalname.yaml  kubia-ingress.yaml            kubia-svc-client-ip-session-affinity.yaml  kubia-svc-nodeport-onlylocal.yaml  tls.cert
+external-service.yaml               kubia-pod.yml                 kubia-svc-headless.yaml                    kubia-svc-nodeport.yaml            tls.key
+ingress                             kubia-rc-readinessprobe.yaml  kubia-svc-loadbalancer.yaml                kubia-svc-publish-not-ready.yaml
+[root@ip-172-31-17-119 05-services]# kubectl apply -f kubia-replicaset.yaml
+replicaset.apps/kubia created
+[root@ip-172-31-17-119 05-services]# cd ..
+[root@ip-172-31-17-119 kubernetes-training]# cd 04-controllers/
+[root@ip-172-31-17-119 04-controllers]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-4z5ps   1/1     Running   0          35s
+pod/kubia-hwn78   1/1     Running   0          35s
+pod/kubia-s5fw2   1/1     Running   0          35s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   107s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       35s
+[root@ip-172-31-17-119 04-controllers]# cat cronjob.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: batch-job-every-fifteen-minutes
+spec:
+  schedule: "0,15,30,45 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: periodic-batch-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: main
+            image: luksa/batch-job
+[root@ip-172-31-17-119 04-controllers]# kubectl get cronjob
+No resources found in default namespace.
+[root@ip-172-31-17-119 04-controllers]# kubectl apply -f cronjob.yaml
+cronjob.batch/batch-job-every-fifteen-minutes created
+[root@ip-172-31-17-119 04-controllers]# kubectl get cronjob
+NAME                              SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     0        <none>          5s
+[root@ip-172-31-17-119 04-controllers]# kubectl get cronjob
+NAME                              SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     0        <none>          9s
+[root@ip-172-31-17-119 04-controllers]# kubectl get jobs
+No resources found in default namespace.
+[root@ip-172-31-17-119 04-controllers]# kubectl get jobs
+No resources found in default namespace.
+[root@ip-172-31-17-119 04-controllers]# kubectl get all
+NAME              READY   STATUS    RESTARTS   AGE
+pod/kubia-4z5ps   1/1     Running   0          2m16s
+pod/kubia-hwn78   1/1     Running   0          2m16s
+pod/kubia-s5fw2   1/1     Running   0          2m16s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   3m28s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       2m16s
+
+NAME                                            SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+cronjob.batch/batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     0        <none>          60s
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]# kubectl get all
+NAME                                                   READY   STATUS    RESTARTS   AGE
+pod/batch-job-every-fifteen-minutes-1656918000-pmjsw   1/1     Running   0          26s
+pod/kubia-4z5ps                                        1/1     Running   0          5m6s
+pod/kubia-hwn78                                        1/1     Running   0          5m6s
+pod/kubia-s5fw2                                        1/1     Running   0          5m6s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   6m18s
+
+NAME                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/kubia   3         3         3       5m6s
+
+NAME                                                   COMPLETIONS   DURATION   AGE
+job.batch/batch-job-every-fifteen-minutes-1656918000   0/1           26s        26s
+
+NAME                                            SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+cronjob.batch/batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     1        34s             3m50s
+[root@ip-172-31-17-119 04-controllers]# kubectl get jobs
+NAME                                         COMPLETIONS   DURATION   AGE
+batch-job-every-fifteen-minutes-1656918000   0/1           39s        39s
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]#
+[root@ip-172-31-17-119 04-controllers]# kubectl get cronjobs
+NAME                              SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     1        76s             4m32s
+[root@ip-172-31-17-119 04-controllers]#
+
+[root@ip-172-31-17-119 ~]# kubectl get jobs
+NAME                                         COMPLETIONS   DURATION   AGE
+batch-job-every-fifteen-minutes-1656918000   1/1           2m5s       18m
+batch-job-every-fifteen-minutes-1656918900   1/1           2m4s       4m4s
+[root@ip-172-31-17-119 ~]# kubectl get cronjobs
+NAME                              SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     0        4m10s           22m
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]# kubectl delete cronjobs batch-job-every-fifteen-minutes
+cronjob.batch "batch-job-every-fifteen-minutes" deleted
+[root@ip-172-31-17-119 ~]# kubectl get cronjobs
+No resources found in default namespace.
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]# kubectl get jobs
+No resources found in default namespace.
+[root@ip-172-31-17-119 ~]#
+
+
+
+
+
+
+
