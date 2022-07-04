@@ -1,0 +1,244 @@
+[root@ip-172-31-17-119 ~]#
+[root@ip-172-31-17-119 ~]# ls
+example-voting-app  flaskapp  hello.py  kubernetes-training
+[root@ip-172-31-17-119 ~]# git clone https://github.com/ashishrpandey/example-voting-app
+fatal: destination path 'example-voting-app' already exists and is not an empty directory.
+[root@ip-172-31-17-119 ~]# cd example-voting-app/k8s-specifications
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]# pwd
+/root/example-voting-app/k8s-specifications
+[root@ip-172-31-17-119 k8s-specifications]# kubectl apply -f .
+deployment.apps/db created
+service/db created
+deployment.apps/redis created
+service/redis created
+deployment.apps/result created
+service/result created
+deployment.apps/vote created
+service/vote created
+deployment.apps/worker created
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get all
+NAME                                                   READY   STATUS              RESTARTS   AGE
+pod/batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed           0          5m56s
+pod/db-b54cd94f4-8j4cl                                 1/1     Running             0          34s
+pod/kubia-4z5ps                                        1/1     Running             0          10m
+pod/kubia-hwn78                                        1/1     Running             0          10m
+pod/kubia-s5fw2                                        1/1     Running             0          10m
+pod/redis-868d64d78-6lcgc                              1/1     Running             0          34s
+pod/result-5d57b59f4b-8826v                            0/1     ContainerCreating   0          34s
+pod/vote-94849dc97-r2lbk                               0/1     ContainerCreating   0          34s
+pod/worker-dd46d7584-zkm88                             0/1     ContainerCreating   0          33s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/db           ClusterIP   10.96.245.21    <none>        5432/TCP         34s
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP          11m
+service/redis        ClusterIP   10.101.42.114   <none>        6379/TCP         34s
+service/result       NodePort    10.110.57.209   <none>        5001:31001/TCP   34s
+service/vote         NodePort    10.102.201.40   <none>        5000:31000/TCP   34s
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/db       1/1     1            1           34s
+deployment.apps/redis    1/1     1            1           34s
+deployment.apps/result   0/1     1            0           34s
+deployment.apps/vote     0/1     1            0           34s
+deployment.apps/worker   0/1     1            0           34s
+
+NAME                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/db-b54cd94f4        1         1         1       34s
+replicaset.apps/kubia               3         3         3       10m
+replicaset.apps/redis-868d64d78     1         1         1       34s
+replicaset.apps/result-5d57b59f4b   1         1         0       34s
+replicaset.apps/vote-94849dc97      1         1         0       34s
+replicaset.apps/worker-dd46d7584    1         1         0       34s
+
+NAME                                                   COMPLETIONS   DURATION   AGE
+job.batch/batch-job-every-fifteen-minutes-1656918000   1/1           2m5s       5m56s
+
+NAME                                            SCHEDULE             SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+cronjob.batch/batch-job-every-fifteen-minutes   0,15,30,45 * * * *   False     0        6m4s            9m20s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS              RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed           0          6m17s
+db-b54cd94f4-8j4cl                                 1/1     Running             0          55s
+kubia-4z5ps                                        1/1     Running             0          10m
+kubia-hwn78                                        1/1     Running             0          10m
+kubia-s5fw2                                        1/1     Running             0          10m
+redis-868d64d78-6lcgc                              1/1     Running             0          55s
+result-5d57b59f4b-8826v                            1/1     Running             0          55s
+vote-94849dc97-r2lbk                               1/1     Running             0          55s
+worker-dd46d7584-zkm88                             0/1     ContainerCreating   0          54s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          9m41s
+db-b54cd94f4-8j4cl                                 1/1     Running     0          4m19s
+kubia-4z5ps                                        1/1     Running     0          14m
+kubia-hwn78                                        1/1     Running     0          14m
+kubia-s5fw2                                        1/1     Running     0          14m
+redis-868d64d78-6lcgc                              1/1     Running     0          4m19s
+result-5d57b59f4b-8826v                            1/1     Running     0          4m19s
+vote-94849dc97-r2lbk                               1/1     Running     0          4m19s
+worker-dd46d7584-zkm88                             1/1     Running     0          4m18s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl delete po vote-94849dc97-r2lbk
+pod "vote-94849dc97-r2lbk" deleted
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          10m
+db-b54cd94f4-8j4cl                                 1/1     Running     0          5m37s
+kubia-4z5ps                                        1/1     Running     0          15m
+kubia-hwn78                                        1/1     Running     0          15m
+kubia-s5fw2                                        1/1     Running     0          15m
+redis-868d64d78-6lcgc                              1/1     Running     0          5m37s
+result-5d57b59f4b-8826v                            1/1     Running     0          5m37s
+vote-94849dc97-shggk                               1/1     Running     0          11s
+worker-dd46d7584-zkm88                             1/1     Running     0          5m36s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          11m
+db-b54cd94f4-8j4cl                                 1/1     Running     0          5m52s
+kubia-4z5ps                                        1/1     Running     0          15m
+kubia-hwn78                                        1/1     Running     0          15m
+kubia-s5fw2                                        1/1     Running     0          15m
+redis-868d64d78-6lcgc                              1/1     Running     0          5m52s
+result-5d57b59f4b-8826v                            1/1     Running     0          5m52s
+vote-94849dc97-shggk                               1/1     Running     0          26s
+worker-dd46d7584-zkm88                             1/1     Running     0          5m51s
+[root@ip-172-31-17-119 k8s-specifications]# ls
+db-deployment.yaml  db-service.yaml  redis-deployment.yaml  redis-service.yaml  result-deployment.yaml  result-service.yaml  vote-deployment.yaml  vote-service.yaml  worker-deployment.yaml
+[root@ip-172-31-17-119 k8s-specifications]# cat vote-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote
+spec:
+  selector:
+    matchLabels:
+      app: vote
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: vote
+    spec:
+      containers:
+      - image: dockersamples/examplevotingapp_vote:before
+        name: vote
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          14m
+db-b54cd94f4-8j4cl                                 1/1     Running     0          8m52s
+kubia-4z5ps                                        1/1     Running     0          18m
+kubia-hwn78                                        1/1     Running     0          18m
+kubia-s5fw2                                        1/1     Running     0          18m
+redis-868d64d78-6lcgc                              1/1     Running     0          8m52s
+result-5d57b59f4b-8826v                            1/1     Running     0          8m52s
+vote-94849dc97-shggk                               1/1     Running     0          3m26s
+worker-dd46d7584-zkm88                             1/1     Running     0          8m51s
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 k8s-specifications]# kubectl delete po vote-94849dc97-shggk
+pod "vote-94849dc97-shggk" deleted
+^C
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          14m
+db-b54cd94f4-8j4cl                                 1/1     Running     0          9m12s
+kubia-4z5ps                                        1/1     Running     0          19m
+kubia-hwn78                                        1/1     Running     0          19m
+kubia-s5fw2                                        1/1     Running     0          19m
+redis-868d64d78-6lcgc                              1/1     Running     0          9m12s
+result-5d57b59f4b-8826v                            1/1     Running     0          9m12s
+vote-94849dc97-jcgk8                               1/1     Running     0          6s
+worker-dd46d7584-zkm88                             1/1     Running     0          9m11s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          14m
+db-b54cd94f4-8j4cl                                 1/1     Running     0          9m14s
+kubia-4z5ps                                        1/1     Running     0          19m
+kubia-hwn78                                        1/1     Running     0          19m
+kubia-s5fw2                                        1/1     Running     0          19m
+redis-868d64d78-6lcgc                              1/1     Running     0          9m14s
+result-5d57b59f4b-8826v                            1/1     Running     0          9m14s
+vote-94849dc97-jcgk8                               1/1     Running     0          8s
+worker-dd46d7584-zkm88                             1/1     Running     0          9m13s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl delete vote-94849dc97-jcgk8
+error: the server doesn't have a resource type "vote-94849dc97-jcgk8"
+[root@ip-172-31-17-119 k8s-specifications]# ^C
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS              RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed           0          14m
+batch-job-every-fifteen-minutes-1656918900-tx5sv   0/1     ContainerCreating   0          3s
+db-b54cd94f4-8j4cl                                 1/1     Running             0          9m33s
+kubia-4z5ps                                        1/1     Running             0          19m
+kubia-hwn78                                        1/1     Running             0          19m
+kubia-s5fw2                                        1/1     Running             0          19m
+redis-868d64d78-6lcgc                              1/1     Running             0          9m33s
+result-5d57b59f4b-8826v                            1/1     Running             0          9m33s
+vote-94849dc97-jcgk8                               1/1     Running             0          27s
+worker-dd46d7584-zkm88                             1/1     Running             0          9m32s
+[root@ip-172-31-17-119 k8s-specifications]# kubectl get po
+NAME                                               READY   STATUS      RESTARTS   AGE
+batch-job-every-fifteen-minutes-1656918000-pmjsw   0/1     Completed   0          14m
+batch-job-every-fifteen-minutes-1656918900-tx5sv   1/1     Running     0          6s
+db-b54cd94f4-8j4cl                                 1/1     Running     0          9m36s
+kubia-4z5ps                                        1/1     Running     0          19m
+kubia-hwn78                                        1/1     Running     0          19m
+kubia-s5fw2                                        1/1     Running     0          19m
+redis-868d64d78-6lcgc                              1/1     Running     0          9m36s
+result-5d57b59f4b-8826v                            1/1     Running     0          9m36s
+vote-94849dc97-jcgk8                               1/1     Running     0          30s
+worker-dd46d7584-zkm88                             1/1     Running     0          9m35s
+[root@ip-172-31-17-119 k8s-specifications]#
+[root@ip-172-31-17-119 ~]# kubectl get po
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-jw8k9        1/1     Running   0          106m
+kubia-4z5ps               1/1     Running   0          131m
+kubia-hwn78               1/1     Running   0          131m
+kubia-s5fw2               1/1     Running   0          131m
+redis-868d64d78-6lcgc     1/1     Running   0          121m
+result-5d57b59f4b-8826v   1/1     Running   0          121m
+vote-94849dc97-jcgk8      1/1     Running   0          112m
+worker-dd46d7584-tqqs4    1/1     Running   1          110m
+[root@ip-172-31-17-119 ~]# kubectl delete po result-5d57b59f4b-8826v
+pod "result-5d57b59f4b-8826v" deleted
+^C
+[root@ip-172-31-17-119 ~]# kubectl get po
+NAME                      READY   STATUS        RESTARTS   AGE
+db-b54cd94f4-jw8k9        1/1     Running       0          106m
+kubia-4z5ps               1/1     Running       0          132m
+kubia-hwn78               1/1     Running       0          132m
+kubia-s5fw2               1/1     Running       0          132m
+redis-868d64d78-6lcgc     1/1     Running       0          122m
+result-5d57b59f4b-7glgg   1/1     Running       0          4s
+result-5d57b59f4b-8826v   1/1     Terminating   0          122m
+vote-94849dc97-jcgk8      1/1     Running       0          113m
+worker-dd46d7584-tqqs4    1/1     Running       1          111m
+[root@ip-172-31-17-119 ~]# kubectl get po
+NAME                      READY   STATUS        RESTARTS   AGE
+db-b54cd94f4-jw8k9        1/1     Running       0          106m
+kubia-4z5ps               1/1     Running       0          132m
+kubia-hwn78               1/1     Running       0          132m
+kubia-s5fw2               1/1     Running       0          132m
+redis-868d64d78-6lcgc     1/1     Running       0          122m
+result-5d57b59f4b-7glgg   1/1     Running       0          7s
+result-5d57b59f4b-8826v   1/1     Terminating   0          122m
+vote-94849dc97-jcgk8      1/1     Running       0          113m
+worker-dd46d7584-tqqs4    1/1     Running       1          111m
+[root@ip-172-31-17-119 ~]# kubectl get po
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-jw8k9        1/1     Running   0          107m
+kubia-4z5ps               1/1     Running   0          132m
+kubia-hwn78               1/1     Running   0          132m
+kubia-s5fw2               1/1     Running   0          132m
+redis-868d64d78-6lcgc     1/1     Running   0          122m
+result-5d57b59f4b-7glgg   1/1     Running   0          40s
+vote-94849dc97-jcgk8      1/1     Running   0          113m
+worker-dd46d7584-tqqs4    1/1     Running   1          111m
+[root@ip-172-31-17-119 ~]#
+
+
+No Difference after deleting "voting Pod" as voting pod is recreated back due to replicas as 1 in vote-deployment.yaml
+No Difference after deleting "worker pod " as worker pod is recreated back due to replicas as 1 in worker-deployment.yaml
+After deleted DB pod it is recreated back but voting result page doesn't work, though voting page is working . But if we delete result pod then it is also recreated and result page also start working.
