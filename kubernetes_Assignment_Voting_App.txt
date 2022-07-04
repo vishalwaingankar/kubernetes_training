@@ -247,5 +247,5 @@ docker-compose.test.yml  Dockerfile  package.json  server.js  tests  views
 
 No Difference(in voting & result page) after deleting "voting Pod" as voting pod is recreated back due to replicas as 1 in vote-deployment.yaml
 No Difference(in voting & result page) after deleting "worker pod " as worker pod is recreated back due to replicas as 1 in worker-deployment.yaml
-After deleted DB pod it is recreated back but voting result page doesn't work, though voting page is working . But if we delete result pod then it is also recreated and result page also start working. As per explaination there is server.js that is responsible for it
+After deleted DB pod it is recreated back but voting result page doesn't work, though voting page is working . But if we delete result pod then it is also recreated and result page also start working. As per explaination there is server.js that is responsible for it. Result pod doesn't get syncronised to new DB pod hence need to delete the result pod
 Please find the working logs as above
