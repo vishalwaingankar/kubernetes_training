@@ -379,6 +379,8 @@ No resources found in default namespace.
 [root@ip-172-31-17-119 ~]#
 
 
+By deleting the cronjobs we can permanently arrest the jobs from running as shown above
+Normal jobs do the defined task/funtion and CronJobs do the same task/function on predefined schedule
 
 
 
